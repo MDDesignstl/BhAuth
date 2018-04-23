@@ -1,35 +1,68 @@
-
-var dataCenterAuthUrl = 'https://auth.bullhornstaffing.com/oauth/authorize'
-
+const https = require("https");
 //Assemble the Auth url to be used in the Auth Call
-function getAuthUrl(dataCenterAuthUrl, client_id, redirect, username, password){
+function getAuthUrl(dataCenterAuthUrl, client_id, redirect, username, password) {
   var redirect_uri='';
   if (redirect) {
-    redirect_uri = 'redirect_uri='+redirect;
+    redirect_uri = '&redirect_uri='+redirect;
   }
   var authUrl=dataCenterAuthUrl +
       '?action=Login&response_type=code&' +
       'client_id='+client_id+'&' +
       'username='+username+'&' +
-      'password='+password+'&' +
+      'password='+password +
       redirect_uri;
   return authUrl;
 }
 
 //Use the AuthUrl to retrive and return Auth Code
-function getAuthCode(authUrl){
-  var code='';
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-        responseUrl = xhr.responseUrl;
-        var matches = responseUrl.match(/code=([^&]*));
+function getAuthCode(dataCenterAuthUrl, client_id, redirect, username, password){
+
+  authUrl = getAuthUrl(dataCenterAuthUrl, client_id, redirect, username, password);
+
+  var code=''
+  httprequest=https.get(authUrl, (response) => {
+
+        responseUrl = response.headers.location;
+        var codePattern = new RegExp('code=([\^&]*)')
+        matches = responseUrl.match(codePattern);
         code = matches[1];
-      }
-    };
-  xhr.open("GET",authUrl, True);
-  xhr.send();
+
+  }).on('error', (e) => {
+    console.error(e);
+});
 
 return code;
 
 };
+
+//Node server for testing
+
+const http = require('http')
+const port = 3000
+
+const requestHandler = (request, response) => {
+  console.log(request.url)
+  response.end('Hello Node.js Server!')
+}
+
+const server = http.createServer(requestHandler)
+
+server.listen(port, (err) => {
+  if (err) {
+    return console.log('something bad happened', err)
+  }
+
+  console.log(`server is listening on ${port}`)
+})
+
+//Tests
+
+CDAUTHURL=''
+CLIENT_ID=''
+CLIENT_SECRET=''
+USERNAME='';
+PASSWORD='';
+
+authCode = getAuthCode(CDAUTHURL, CLIENT_ID, null, USERNAME, PASSWORD);
+console.log(authCode);
+process.exit();
