@@ -19,13 +19,21 @@ function getAuthCode(dataCenterAuthUrl, client_id, redirect, username, password)
 
   authUrl = getAuthUrl(dataCenterAuthUrl, client_id, redirect, username, password);
 
-  var code=''
-  httprequest=https.get(authUrl, (response) => {
+console.log(authUrl);
+  var code='';
+  console.log("hello");
+  https.get(authUrl, (res) => {
 
-        responseUrl = response.headers.location;
-        var codePattern = new RegExp('code=([\^&]*)')
-        matches = responseUrl.match(codePattern);
-        code = matches[1];
+
+
+    console.log('statusCode:', res.statusCode);
+    console.log('headers:', res.headers);
+
+    responseUrl = res.headers.location;
+    var codePattern = new RegExp('code=([\^&]*)')
+    matches = responseUrl.match(codePattern);
+    console.log('Auth Code: ' + matches[1]);
+    code = matches[1];
 
   }).on('error', (e) => {
     console.error(e);
@@ -57,12 +65,12 @@ server.listen(port, (err) => {
 
 //Tests
 
-CDAUTHURL=''
-CLIENT_ID=''
-CLIENT_SECRET=''
+CDAUTHURL='';
+CLIENT_ID='';
+CLIENT_SECRET='';
 USERNAME='';
 PASSWORD='';
 
 authCode = getAuthCode(CDAUTHURL, CLIENT_ID, null, USERNAME, PASSWORD);
 console.log(authCode);
-process.exit();
+//process.exit();
